@@ -19,9 +19,7 @@ func getCommand(server string, cid int) (string, error) {
 	client := http.Client{
 		Timeout: 2 * time.Second,
 	}
-	hresp, err := client.PostForm(server+"/pull", url.Values{
-		"cid": {strconv.Itoa(cid)},
-	})
+	hresp, err := client.PostForm(server+"/pull", url.Values{"cid": {strconv.Itoa(cid)}})
 	if err != nil {
 		return "", err
 	}
@@ -51,8 +49,10 @@ func Fetch(config *interop.Config, configMutex *sync.RWMutex, cmds *chan string)
 
 			cmd, err := getCommand(srv, i)
 			if err != nil {
+				// fmt.Print(err)
 				continue
 			}
+			// fmt.Print(cmd)
 			*cmds <- cmd
 			break
 		}
@@ -89,7 +89,7 @@ func offerCommand(w http.ResponseWriter, r *http.Request) {
 }
 
 func offerConfig(w http.ResponseWriter, r *http.Request) {
-	bs, err := json.Marshal(interop.GenerateConfig("0.0.0.0")) // TODO get current IP
+	bs, err := json.Marshal(interop.GenerateConfig("http://0.0.0.0")) // TODO get current IP
 	if err != nil {
 		fmt.Printf("Failed!")
 	} else {

