@@ -41,11 +41,12 @@ func run() { // TODO add targeting logic?
 		// fmt.Print(c)
 		go func() {
 			fmt.Println("Command Received!")
+			fmt.Println("Command:", c)
 			out, err := exec.Command("sh", "-c", c).Output()
 			if err != nil {
 				fmt.Printf("Error: %s", err)
 			}
-			fmt.Println(string(out))
+			fmt.Println("Output:", string(out))
 		}()
 	}
 }
@@ -67,6 +68,7 @@ func main() {
 	}
 	fmt.Println("Config Recieved!")
 	fmt.Println(config)
+	fmt.Println()
 	pullStream := make(chan string)
 	pushStream := make(chan string)
 
