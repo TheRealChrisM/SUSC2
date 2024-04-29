@@ -65,7 +65,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Print(config)
+	fmt.Println("Config Recieved!")
+	fmt.Println(config)
 	pullStream := make(chan string)
 	pushStream := make(chan string)
 
