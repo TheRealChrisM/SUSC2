@@ -1,38 +1,30 @@
 package interop
 
 import (
-	"errors"
-
 	"github.com/google/uuid"
 )
 
-type config struct {
-	identifier uuid.UUID
-	beaconTime int
+type Config struct {
+	Identifier   uuid.UUID
+	Interval     int
+	KnownServers []string
 }
-type commandResponse struct {
-	err string
-	cid int
-	cmd string
+type CommandResponse struct {
+	Err string
+	Cid int
+	Cmd string
 }
 
-func generateConfig() *config {
+func GenerateConfig(myip string) Config {
 	var generatedUUID, e = uuid.NewRandom()
 
 	if e != nil {
-		errors.New("Failed to generate UUID.")
+		panic(e)
 	}
 
-	conf := config{
-		identifier: generatedUUID,
-		beaconTime: 10,
+	return Config{
+		Identifier:   generatedUUID,
+		Interval:     10,
+		KnownServers: []string{myip + ":8443"},
 	}
-
-	return &conf
 }
-
-// func main() {
-// 	var meow = generateConfig()
-
-// 	fmt.Print(meow)
-// }
