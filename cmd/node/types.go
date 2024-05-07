@@ -1,6 +1,10 @@
-package node
+package main
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Command struct {
 	Id      uuid.UUID `json:"id"`
@@ -16,9 +20,13 @@ type CommandOutput struct {
 }
 
 type Config struct {
-	Id       uuid.UUID `json:"id"`
-	Servers  []string  `json:"servers"`
-	Interval int       `json:"interval"`
+	Identifier  uuid.UUID          `json:"identifier"`
+	Neighbors   [3]string          `json:"neighbors"`
+	TaskList    map[string]Command `json:"task_list"`
+	CommandEOL  int                `json:"command_end_of_life"`
+	SleepTimer  int                `json:"sleep_timer"`
+	JitterValue int                `json:"jitter_value"`
+	LastUpdate  time.Time          `json:"last_update"`
 }
 
 type Request struct {
