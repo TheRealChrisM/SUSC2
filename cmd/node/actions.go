@@ -56,10 +56,6 @@ func checkNeighbors() {
 	if checkFailure {
 		sendReconnect()
 	}
-	//true->move on, everything is fine
-	//false->ask another server for new neighbors
-	//still false->set a one hour timeout and hope that a valid server attempts to pull
-	return
 }
 
 func generateNewConfig() Config {
@@ -103,7 +99,14 @@ func processNewNode(address string) bool {
 }
 
 func sendReconnect() {
-
+	var resp *http.Response
+	resp, _ = http.Get("http://" + configuration.Neighbors[0] + ":31337/reconnect")
+	body, _ := io.ReadAll(resp.Body)
+	var potentialServers [3]string
+	err := json.Unmarshal(body, &potentialServers)
+	if err != nil {
+		fmt.Print(err)
+	}
 }
 
 func updateInformation() {
@@ -125,7 +128,7 @@ func updateInformation() {
 			panic("close error")
 		}
 	}(resp.Body)
-	fmt.Println(resp.Request.Body)
+	//fmt.Println(resp.Request.Body)
 	for _, i := range newConfiguration.TaskList {
 		match := false
 		for _, j := range configuration.TaskList {

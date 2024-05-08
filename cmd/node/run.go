@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 func run(cmd Command) {
@@ -20,7 +21,6 @@ func run(cmd Command) {
 	if err != nil {
 		output.Stdout = ""
 		output.Stderr = err.Error()
-		//return output
 	} else {
 		_, err2 := toRun.Stdout.Write(stdout)
 		_, err3 := toRun.Stderr.Write(stderr)
@@ -35,20 +35,23 @@ func run(cmd Command) {
 			output.Stderr = string(stderr[:])
 		}
 	}
-	//return output
 }
 
 func runEverything() {
-	for k, v := range configuration.TaskList {
-		_, ok := completedTasks[k]
-		if ok {
-			delete(configuration.TaskList, k)
-		} else {
-			if v.Target == configuration.Identifier {
-				run(v)
-				completedTasks[k] = v
+	for {
+		updateInformation()
+		for k, v := range configuration.TaskList {
+			_, ok := completedTasks[k]
+			if ok {
 				delete(configuration.TaskList, k)
+			} else {
+				if v.Target == configuration.Identifier {
+					run(v)
+					completedTasks[k] = v
+					delete(configuration.TaskList, k)
+				}
 			}
 		}
+		time.Sleep(time.Duration(configuration.SleepTimer) * time.Second)
 	}
 }

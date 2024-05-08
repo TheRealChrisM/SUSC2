@@ -44,7 +44,11 @@ func joinNet(w http.ResponseWriter, req *http.Request) {
 }
 
 func reconnect(w http.ResponseWriter, req *http.Request) {
-
+	jsonConfig, err := json.Marshal(configuration.Neighbors)
+	if err != nil {
+		fmt.Print("Failed to JSONify config.")
+	}
+	w.Write(jsonConfig)
 }
 
 func heartbeat(w http.ResponseWriter, req *http.Request) {
