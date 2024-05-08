@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand/v2"
 	"net/http"
 	"strings"
@@ -107,6 +109,7 @@ func sendReconnect() {
 func updateInformation() {
 	randVal := rand.IntN(3)
 	pullURL := "http://" + configuration.Neighbors[randVal] + ":31337/api/pull"
+	resp, err := http.Get(pullURL)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		checkNeighbors()
@@ -123,7 +126,7 @@ func broadcastUUID() {
 
 	if configuration.Neighbors[0] != "" {
 		url = "http://" + configuration.Neighbors[0] + ":31337/api/join"
-		r, _ := http.NewRequest(http.MethodPost, url, strings.NewReader(configuration.Identifier.().Encode()))
+		r, _ := http.NewRequest(http.MethodPost, url, strings.NewReader(configuration.Identifier.Encode()))
 	}
 	if configuration.Neighbors[1] != "" {
 		url = "http://" + configuration.Neighbors[1] + ":31337/api/join"
