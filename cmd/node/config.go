@@ -9,15 +9,9 @@ import (
 	"github.com/google/uuid"
 )
 
-//var identifier uuid.UUID
-//var neighbors [3]string
-//var taskList map[string]config
-//var commandEOL int
-//var sleepTimer int
-//var jitterValue int
-//var lastupdate time.Time
-
 var configuration Config
+var neighborSearchTimeout bool
+var neighborSearchTimeoutExpiration time.Time
 
 // https://stackoverflow.com/questions/35809252/check-if-flag-was-provided-in-go
 func confirmServerValueProvided() bool {
@@ -41,15 +35,10 @@ func validateServerAddress(address string) bool {
 	return true
 }
 
-// Test a node to determine whether it is functional or not.
-func isUnreachable(address string) bool {
-	//neighbors
-	return true
-}
-
 // If no server is provided create a baseline configuration and wait for more nodes to connect and establish web.
 func bootstrapSelf() {
 	var e error
+	neighborSearchTimeout = true
 	configuration.Neighbors[0] = ""
 	configuration.Neighbors[1] = ""
 	configuration.Neighbors[2] = ""
@@ -65,5 +54,5 @@ func bootstrapSelf() {
 }
 
 func deployInitialConfiguration() {
-
+	neighborSearchTimeout = true
 }

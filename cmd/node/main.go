@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 )
 
 var server string
@@ -18,5 +19,10 @@ func main() {
 	} else {
 		bootstrapSelf()
 	}
+	http.HandleFunc("/api/pull", pullConfig)
+	http.HandleFunc("/api/join", joinNet)
+	http.HandleFunc("/api/reconnect", reconnect)
+	http.HandleFunc("/api", heartbeat)
+	http.ListenAndServe("0.0.0.0:31337", nil)
 	fmt.Print(configuration.LastUpdate)
 }
