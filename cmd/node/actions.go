@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -115,5 +116,18 @@ func updateInformation() {
 }
 
 func broadcastUUID() {
+	//Attempt to post the new UUID to each known server
+	var url string
+	client := &http.Client{}
 
+	if configuration.Neighbors[0] != "" {
+		url = "http://" + configuration.Neighbors[0] + ":31337/api/join"
+		r, _ := http.NewRequest(http.MethodPost, url, strings.NewReader(configuration.Identifier.().Encode()))
+	}
+	if configuration.Neighbors[1] != "" {
+		url = "http://" + configuration.Neighbors[1] + ":31337/api/join"
+	}
+	if configuration.Neighbors[2] != "" {
+		url = "http://" + configuration.Neighbors[2] + ":31337/api/join"
+	}
 }

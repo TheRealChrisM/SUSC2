@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/google/uuid"
@@ -26,17 +25,6 @@ func confirmServerValueProvided() bool {
 		}
 	})
 	return found
-}
-
-func validateServerAddress(address string) bool {
-	match, err := regexp.MatchString("^http://[0-9]\\.[0-9]\\.[0-9]\\.[0-9]:[0-9]+$", address)
-	if err != nil {
-		panic(fmt.Errorf(fmt.Sprintf("Invalid server address: %s", address)))
-	}
-	if !match {
-		panic(fmt.Errorf(fmt.Sprintf("Invalid server address: %s", address)))
-	}
-	return true
 }
 
 // If no server is provided create a baseline configuration and wait for more nodes to connect and establish web.
