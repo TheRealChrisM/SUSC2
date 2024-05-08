@@ -14,6 +14,7 @@ import (
 // GET /api/pull: pull updated information from node
 // POST /api/join: provide UUID value and push it throughout the network
 // GET /api/reconnect: provide new neighbors
+// POST /api/ctrl: Utilized to issue commands to the node network
 
 func pullConfig(w http.ResponseWriter, req *http.Request) {
 	jsonConfig, err := json.Marshal(generateNewConfig())
@@ -30,11 +31,14 @@ func pullConfig(w http.ResponseWriter, req *http.Request) {
 func joinNet(w http.ResponseWriter, req *http.Request) {
 	data, _ := io.ReadAll(req.Body)
 	UUIDString := string(data)
-	newUUID, err := uuid.Parse(UUIDString)
-	if err != nil {
-		fmt.Println(err)
+	if configuration.KnownNodes[UUIDString] == uuid.Nil {
+		newUUID, err := uuid.Parse(UUIDString)
+		if err != nil {
+			fmt.Println(err)
+		}
+		configuration.KnownNodes[UUIDString] = newUUID
 	}
-	configuration.KnownNodes[UUIDString] = newUUID
+
 }
 
 func reconnect(w http.ResponseWriter, req *http.Request) {

@@ -22,7 +22,7 @@ type CommandOutput struct {
 type Config struct {
 	Identifier  uuid.UUID            `json:"identifier"`
 	Neighbors   [3]string            `json:"neighbors"`
-	KnownNodes  map[string]uuid.UUID `json:"KnownNodes"`
+	KnownNodes  map[string]uuid.UUID `json:"known_nodes"`
 	TaskList    map[string]Command   `json:"task_list"`
 	CommandEOL  int                  `json:"command_end_of_life"`
 	SleepTimer  int                  `json:"sleep_timer"`

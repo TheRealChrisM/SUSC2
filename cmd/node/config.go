@@ -15,6 +15,7 @@ import (
 var configuration Config
 var neighborSearchTimeout bool
 var neighborSearchTimeoutExpiration time.Time
+var completedTasks map[string]Command
 
 // https://stackoverflow.com/questions/35809252/check-if-flag-was-provided-in-go
 func confirmServerValueProvided() bool {

@@ -78,6 +78,7 @@ func generateNewConfig() Config {
 	newConfiguration.SleepTimer = configuration.SleepTimer
 	newConfiguration.TaskList = configuration.TaskList
 	newConfiguration.LastUpdate = configuration.LastUpdate
+	newConfiguration.KnownNodes = configuration.KnownNodes
 	return newConfiguration
 }
 
