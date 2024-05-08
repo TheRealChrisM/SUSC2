@@ -107,10 +107,11 @@ func sendReconnect() {
 func updateInformation() {
 	randVal := rand.IntN(3)
 	pullURL := "http://" + configuration.Neighbors[randVal] + ":31337/api/pull"
-	resp, err := http.Get(pullURL)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		checkNeighbors()
 	}
+	json.Unmarshal(body, &configuration)
 	defer resp.Body.Close()
 	fmt.Println(resp.Request.Body)
 }
