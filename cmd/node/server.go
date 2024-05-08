@@ -26,6 +26,7 @@ func pullConfig(w http.ResponseWriter, req *http.Request) {
 	//if currently timed out for checking for more neighbors add this server to neighbor list
 	if neighborSearchTimeout {
 		processNewNode(strings.Split(req.RemoteAddr, ":")[0])
+		fmt.Println(req.RemoteAddr)
 	}
 }
 
@@ -67,4 +68,5 @@ func issueCommand(w http.ResponseWriter, req *http.Request) {
 		configuration.TaskList[command.Identifier.String()] = command
 		w.WriteHeader(200)
 	}
+	fmt.Println(command)
 }

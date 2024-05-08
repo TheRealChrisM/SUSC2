@@ -23,8 +23,7 @@ func checkNeighbors() {
 			resp, err = http.Get("http://" + configuration.Neighbors[0] + ":31337/api")
 			if err != nil {
 				fmt.Print(err)
-			}
-			if resp.StatusCode != 200 {
+			} else if resp.StatusCode != 200 {
 				configuration.Neighbors[0] = ""
 				checkFailure = true
 			}
@@ -34,8 +33,7 @@ func checkNeighbors() {
 			resp, err = http.Get("http://" + configuration.Neighbors[1] + ":31337/api")
 			if err != nil {
 				fmt.Print(err)
-			}
-			if resp.StatusCode != 200 {
+			} else if resp.StatusCode != 200 {
 				configuration.Neighbors[0] = ""
 				checkFailure = true
 			}
@@ -45,8 +43,7 @@ func checkNeighbors() {
 			resp, err = http.Get("http://" + configuration.Neighbors[2] + ":31337/api")
 			if err != nil {
 				fmt.Print(err)
-			}
-			if resp.StatusCode != 200 {
+			} else if resp.StatusCode != 200 {
 				configuration.Neighbors[0] = ""
 				checkFailure = true
 			}
@@ -99,57 +96,86 @@ func processNewNode(address string) bool {
 }
 
 func sendReconnect() {
-	var resp *http.Response
-	resp, _ = http.Get("http://" + configuration.Neighbors[0] + ":31337/reconnect")
-	body, _ := io.ReadAll(resp.Body)
-	var potentialServers [3]string
-	err := json.Unmarshal(body, &potentialServers)
-	if err != nil {
-		fmt.Print(err)
+	if !((configuration.Neighbors[0] == "") && (configuration.Neighbors[1] == "") && (configuration.Neighbors[2] == "")) {
+		var resp *http.Response
+		var randVal int
+		for {
+			randVal = rand.IntN(3)
+			if configuration.Neighbors[randVal] != "" {
+				break
+			}
+		}
+		resp, _ = http.Get("http://" + configuration.Neighbors[randVal] + ":31337/reconnect")
+		body, _ := io.ReadAll(resp.Body)
+		var potentialServers [3]string
+		err := json.Unmarshal(body, &potentialServers)
+		if err != nil {
+			fmt.Print(err)
+		} else {
+			for _, address := range potentialServers {
+				processNewNode(address)
+			}
+		}
+	} else {
+		neighborSearchTimeout = true
+		neighborSearchTimeoutExpiration = time.Now().Add(time.Minute * 1)
 	}
 }
 
 func updateInformation() {
-	randVal := rand.IntN(3)
-	var newConfiguration Config
-	pullURL := "http://" + configuration.Neighbors[randVal] + ":31337/api/pull"
-	resp, _ := http.Get(pullURL)
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		checkNeighbors()
-	}
-	err = json.Unmarshal(body, &newConfiguration)
-	if err != nil {
-		panic("meowdy")
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			panic("close error")
-		}
-	}(resp.Body)
-	//fmt.Println(resp.Request.Body)
-	for _, i := range newConfiguration.TaskList {
-		match := false
-		for _, j := range configuration.TaskList {
-			if i.Command == j.Command && i.Target == j.Target {
-				match = true
+	if !((configuration.Neighbors[0] == "") && (configuration.Neighbors[1] == "") && (configuration.Neighbors[2] == "")) {
+		var randVal int
+		for {
+			randVal = rand.IntN(3)
+			if configuration.Neighbors[randVal] != "" {
 				break
 			}
 		}
-		if !match {
-			configuration.TaskList[i.Identifier.String()] = i
+
+		var newConfiguration Config
+		pullURL := "http://" + configuration.Neighbors[randVal] + ":31337/api/pull"
+		resp, err := http.Get(pullURL)
+		if err != nil {
+			checkNeighbors()
+		} else {
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Println("Error reading Body of configuration response.")
+			} else {
+				err = json.Unmarshal(body, &newConfiguration)
+				if err != nil {
+					panic("meowdy")
+				}
+				defer func(Body io.ReadCloser) {
+					err := Body.Close()
+					if err != nil {
+						panic("close error")
+					}
+				}(resp.Body)
+			}
 		}
-	}
-	configuration.Neighbors = newConfiguration.Neighbors
-	configuration.Identifier = newConfiguration.Identifier
-	configuration.LastUpdate = newConfiguration.LastUpdate
-	configuration.CommandEOL = newConfiguration.CommandEOL
-	configuration.JitterValue = newConfiguration.JitterValue
-	configuration.SleepTimer = newConfiguration.SleepTimer
-	for k, v := range configuration.TaskList {
-		if v.DeployTime.Add(time.Second * time.Duration(configuration.CommandEOL)).Before(time.Now()) {
-			delete(configuration.TaskList, k)
+
+		//fmt.Println(resp.Request.Body)
+		for _, i := range newConfiguration.TaskList {
+			match := false
+			for _, j := range configuration.TaskList {
+				if i.Command == j.Command && i.Target == j.Target {
+					match = true
+					break
+				}
+			}
+			if !match {
+				configuration.TaskList[i.Identifier.String()] = i
+			}
+		}
+		configuration.LastUpdate = newConfiguration.LastUpdate
+		configuration.CommandEOL = newConfiguration.CommandEOL
+		configuration.JitterValue = newConfiguration.JitterValue
+		configuration.SleepTimer = newConfiguration.SleepTimer
+		for k, v := range configuration.TaskList {
+			if v.DeployTime.Add(time.Second * time.Duration(configuration.CommandEOL)).Before(time.Now()) {
+				delete(configuration.TaskList, k)
+			}
 		}
 	}
 }

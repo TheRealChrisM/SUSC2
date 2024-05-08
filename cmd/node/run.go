@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -8,33 +9,10 @@ import (
 )
 
 func run(cmd Command) {
-	output := CommandOutput{
-		Id:     cmd.Identifier,
-		Stdout: "",
-		Stderr: "",
-	}
+	fmt.Println(cmd)
 	args := strings.Fields(os.ExpandEnv(cmd.Command))
 	toRun := exec.Command(args[0], args[1:len(args)]...)
-	var stdout []byte
-	var stderr []byte
-	err := toRun.Run()
-	if err != nil {
-		output.Stdout = ""
-		output.Stderr = err.Error()
-	} else {
-		_, err2 := toRun.Stdout.Write(stdout)
-		_, err3 := toRun.Stderr.Write(stderr)
-		if err2 != nil {
-			output.Stdout = ""
-			output.Stderr = err2.Error()
-		} else if err3 != nil {
-			output.Stdout = ""
-			output.Stderr = err3.Error()
-		} else {
-			output.Stdout = string(stdout[:])
-			output.Stderr = string(stderr[:])
-		}
-	}
+	toRun.Run()
 }
 
 func runEverything() {
@@ -45,13 +23,19 @@ func runEverything() {
 			if ok {
 				delete(configuration.TaskList, k)
 			} else {
-				if v.Target == configuration.Identifier {
+				fmt.Println(v.Target.String())
+				fmt.Println(configuration.Identifier.String())
+				fmt.Println(v.Target.String() == configuration.Identifier.String())
+				if v.Target.String() == configuration.Identifier.String() {
+					fmt.Printf("Running following command: %s", v)
 					run(v)
 					completedTasks[k] = v
 					delete(configuration.TaskList, k)
 				}
 			}
 		}
+		fmt.Print("Sleeping, current configuration is: ")
+		fmt.Println(configuration)
 		time.Sleep(time.Duration(configuration.SleepTimer) * time.Second)
 	}
 }

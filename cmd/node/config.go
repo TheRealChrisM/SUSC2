@@ -41,6 +41,8 @@ func bootstrapSelf() {
 	configuration.Identifier, e = uuid.NewRandom()
 	configuration.KnownNodes = make(map[string]uuid.UUID)
 	configuration.TaskList = make(map[string]Command)
+	completedTasks = make(map[string]Command)
+	fmt.Println(configuration)
 	if e != nil {
 		panic(e)
 	}
@@ -62,6 +64,7 @@ func deployInitialConfiguration() {
 
 	configuration.Neighbors[0] = server
 	configuration.Identifier, _ = uuid.NewRandom()
+	completedTasks = make(map[string]Command)
 	broadcastUUID()
 	fmt.Print(configuration)
 }
