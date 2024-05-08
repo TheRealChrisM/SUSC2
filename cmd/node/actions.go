@@ -126,12 +126,26 @@ func broadcastUUID() {
 
 	if configuration.Neighbors[0] != "" {
 		url = "http://" + configuration.Neighbors[0] + ":31337/api/join"
-		r, _ := http.NewRequest(http.MethodPost, url, strings.NewReader(configuration.Identifier.Encode()))
+		r, _ := http.NewRequest(http.MethodPost, url, strings.NewReader(configuration.Identifier.String()))
+		resp, _ := client.Do(r)
+		data, _ := io.ReadAll(resp.Body)
+		datastr := string(data)
+		fmt.Print(datastr)
 	}
 	if configuration.Neighbors[1] != "" {
 		url = "http://" + configuration.Neighbors[1] + ":31337/api/join"
+		r, _ := http.NewRequest(http.MethodPost, url, strings.NewReader(configuration.Identifier.String()))
+		resp, _ := client.Do(r)
+		data, _ := io.ReadAll(resp.Body)
+		datastr := string(data)
+		fmt.Print(datastr)
 	}
 	if configuration.Neighbors[2] != "" {
 		url = "http://" + configuration.Neighbors[2] + ":31337/api/join"
+		r, _ := http.NewRequest(http.MethodPost, url, strings.NewReader(configuration.Identifier.String()))
+		resp, _ := client.Do(r)
+		data, _ := io.ReadAll(resp.Body)
+		datastr := string(data)
+		fmt.Print(datastr)
 	}
 }

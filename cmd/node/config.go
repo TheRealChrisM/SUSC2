@@ -62,7 +62,6 @@ func deployInitialConfiguration() {
 
 	configuration.Neighbors[0] = server
 	configuration.Identifier, _ = uuid.NewRandom()
-	//configuration.KnownNodes[string(configuration.Identifier)] = configuration.Identifier
-
+	broadcastUUID()
 	fmt.Print(configuration)
 }

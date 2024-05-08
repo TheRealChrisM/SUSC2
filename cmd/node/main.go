@@ -20,7 +20,7 @@ func main() {
 	http.HandleFunc("/api/pull", pullConfig)
 	http.HandleFunc("/api/join", joinNet)
 	http.HandleFunc("/api/reconnect", reconnect)
-	http.HandleFunc("/api/ctrl", issueCommand)
+	//http.HandleFunc("/api/ctrl", issueCommand)
 	http.HandleFunc("/api", heartbeat)
 	http.ListenAndServe("0.0.0.0:31337", nil)
 }

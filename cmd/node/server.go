@@ -37,6 +37,7 @@ func joinNet(w http.ResponseWriter, req *http.Request) {
 			fmt.Println(err)
 		}
 		configuration.KnownNodes[UUIDString] = newUUID
+		broadcastUUID()
 	}
 
 }
