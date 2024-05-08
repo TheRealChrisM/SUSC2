@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-func updateInformation() {
-	return
-}
-
 func checkNeighbors() {
 	checkFailure := false
 	if neighborSearchTimeoutExpiration.Before(time.Now()) {
@@ -20,31 +16,37 @@ func checkNeighbors() {
 		var resp *http.Response
 		var err error
 		//check to see if /api returns 200 status code for each server
-		resp, err = http.Get(configuration.Neighbors[0] + ":31337/api")
-		if err != nil {
-			fmt.Print(err)
-		}
-		if resp.StatusCode != 200 {
-			configuration.Neighbors[0] = ""
-			checkFailure = true
-		}
-
-		resp, err = http.Get(configuration.Neighbors[1] + ":31337/api")
-		if err != nil {
-			fmt.Print(err)
-		}
-		if resp.StatusCode != 200 {
-			configuration.Neighbors[0] = ""
-			checkFailure = true
+		if configuration.Neighbors[0] != "" {
+			resp, err = http.Get("http://" + configuration.Neighbors[0] + ":31337/api")
+			if err != nil {
+				fmt.Print(err)
+			}
+			if resp.StatusCode != 200 {
+				configuration.Neighbors[0] = ""
+				checkFailure = true
+			}
 		}
 
-		resp, err = http.Get(configuration.Neighbors[2] + ":31337/api")
-		if err != nil {
-			fmt.Print(err)
+		if configuration.Neighbors[1] != "" {
+			resp, err = http.Get("http://" + configuration.Neighbors[1] + ":31337/api")
+			if err != nil {
+				fmt.Print(err)
+			}
+			if resp.StatusCode != 200 {
+				configuration.Neighbors[0] = ""
+				checkFailure = true
+			}
 		}
-		if resp.StatusCode != 200 {
-			configuration.Neighbors[0] = ""
-			checkFailure = true
+
+		if configuration.Neighbors[2] != "" {
+			resp, err = http.Get("http://" + configuration.Neighbors[2] + ":31337/api")
+			if err != nil {
+				fmt.Print(err)
+			}
+			if resp.StatusCode != 200 {
+				configuration.Neighbors[0] = ""
+				checkFailure = true
+			}
 		}
 	}
 
@@ -80,18 +82,37 @@ func generateNewConfig() Config {
 }
 
 // Attempts to add add a node as a neighbor if necessary.
-func processNewNode(address string) {
-	if configuration.Neighbors[0] == "" {
-		configuration.Neighbors[0] = address
-	} else if configuration.Neighbors[1] == "" {
-		configuration.Neighbors[1] = address
-	} else if configuration.Neighbors[2] == "" {
-		configuration.Neighbors[2] = address
+func processNewNode(address string) bool {
+	if (address != configuration.Neighbors[0]) && (address != configuration.Neighbors[1]) && (address != configuration.Neighbors[2]) {
+		if configuration.Neighbors[0] == "" {
+			configuration.Neighbors[0] = address
+		} else if configuration.Neighbors[1] == "" {
+			configuration.Neighbors[1] = address
+		} else if configuration.Neighbors[2] == "" {
+			configuration.Neighbors[2] = address
+		}
+		neighborSearchTimeout = false
+		checkNeighbors()
+		return true
 	}
-	neighborSearchTimeout = false
-	checkNeighbors()
+	return false
 }
 
 func sendReconnect() {
+
+}
+
+func updateInformation() {
+	randVal := rand.IntN(3)
+	pullURL := "http://" + configuration.Neighbors[randVal] + ":31337/api/pull"
+	resp, err := http.Get(pullURL)
+	if err != nil {
+		checkNeighbors()
+	}
+	defer resp.Body.Close()
+	fmt.Println(resp.Request.Body)
+}
+
+func broadcastUUID() {
 
 }

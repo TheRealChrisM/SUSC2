@@ -8,7 +8,7 @@ import (
 
 func run(cmd Command) CommandOutput {
 	output := CommandOutput{
-		Id:     cmd.Id,
+		Id:     cmd.Identifier,
 		Stdout: "",
 		Stderr: "",
 	}

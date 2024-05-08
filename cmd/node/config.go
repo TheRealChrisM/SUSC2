@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
 	"regexp"
 	"time"
 
@@ -47,7 +50,8 @@ func bootstrapSelf() {
 	configuration.JitterValue = 2
 	configuration.LastUpdate = time.Now()
 	configuration.Identifier, e = uuid.NewRandom()
-
+	configuration.KnownNodes = make(map[string]uuid.UUID)
+	configuration.TaskList = make(map[string]Command)
 	if e != nil {
 		panic(e)
 	}
@@ -55,4 +59,21 @@ func bootstrapSelf() {
 
 func deployInitialConfiguration() {
 	neighborSearchTimeout = true
+	pullURL := "http://" + server + ":31337/api/pull"
+	resp, err := http.Get(pullURL)
+	if err != nil {
+		checkNeighbors()
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		panic("meowdy")
+	}
+	json.Unmarshal(body, &configuration)
+
+	configuration.Neighbors[0] = server
+	configuration.Identifier, _ = uuid.NewRandom()
+	//configuration.KnownNodes[string(configuration.Identifier)] = configuration.Identifier
+
+	fmt.Print(configuration)
 }

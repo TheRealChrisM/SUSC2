@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 //API Endpoints
@@ -13,7 +16,6 @@ import (
 // GET /api/reconnect: provide new neighbors
 
 func pullConfig(w http.ResponseWriter, req *http.Request) {
-	//fmt.Fprintf(w, )
 	jsonConfig, err := json.Marshal(generateNewConfig())
 	if err != nil {
 		fmt.Print("Failed to JSONify config.")
@@ -26,7 +28,13 @@ func pullConfig(w http.ResponseWriter, req *http.Request) {
 }
 
 func joinNet(w http.ResponseWriter, req *http.Request) {
-
+	data, _ := io.ReadAll(req.Body)
+	UUIDString := string(data)
+	newUUID, err := uuid.Parse(UUIDString)
+	if err != nil {
+		fmt.Println(err)
+	}
+	configuration.KnownNodes[UUIDString] = newUUID
 }
 
 func reconnect(w http.ResponseWriter, req *http.Request) {

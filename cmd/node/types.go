@@ -7,10 +7,10 @@ import (
 )
 
 type Command struct {
-	Id      uuid.UUID `json:"id"`
-	Command string    `json:"command"`
-	Parent  string    `json:"parent"`
-	Target  string    `json:"target"`
+	Target     uuid.UUID `json:"target"`
+	Command    string    `json:"command"`
+	DeployTime time.Time `json:"deploy_time"`
+	Identifier uuid.UUID `json:"identifier"`
 }
 
 type CommandOutput struct {
@@ -20,13 +20,14 @@ type CommandOutput struct {
 }
 
 type Config struct {
-	Identifier  uuid.UUID          `json:"identifier"`
-	Neighbors   [3]string          `json:"neighbors"`
-	TaskList    map[string]Command `json:"task_list"`
-	CommandEOL  int                `json:"command_end_of_life"`
-	SleepTimer  int                `json:"sleep_timer"`
-	JitterValue int                `json:"jitter_value"`
-	LastUpdate  time.Time          `json:"last_update"`
+	Identifier  uuid.UUID            `json:"identifier"`
+	Neighbors   [3]string            `json:"neighbors"`
+	KnownNodes  map[string]uuid.UUID `json:"KnownNodes"`
+	TaskList    map[string]Command   `json:"task_list"`
+	CommandEOL  int                  `json:"command_end_of_life"`
+	SleepTimer  int                  `json:"sleep_timer"`
+	JitterValue int                  `json:"jitter_value"`
+	LastUpdate  time.Time            `json:"last_update"`
 }
 
 type Request struct {
