@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -48,4 +49,18 @@ func reconnect(w http.ResponseWriter, req *http.Request) {
 
 func heartbeat(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "meowdy")
+}
+
+func issueCommand(w http.ResponseWriter, req *http.Request) {
+	data, _ := io.ReadAll(req.Body)
+	var command Command
+	err := json.Unmarshal(data, &command)
+	if err != nil {
+		w.WriteHeader(400)
+	} else {
+		command.Identifier = uuid.New()
+		command.DeployTime = time.Now()
+		configuration.TaskList[command.Identifier.String()] = command
+		w.WriteHeader(200)
+	}
 }

